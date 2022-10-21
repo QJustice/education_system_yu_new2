@@ -27,8 +27,8 @@ class Login:
         elif self.account == '':
             tkinter.messagebox.showerror(title='教务管理系统', message='警告！用户名不能为空！')
         elif self.CheckAccount():
-
-
+            tkinter.messagebox.showinfo(title='教务管理系统', message='登录成功')
+            tkinter.messagebox.showinfo(title='教务管理系统', message='请稍后...')
             _gui_root.destroy()
             account = self.GetLoginAccount()
             if account[2] == 0:
@@ -44,6 +44,23 @@ class Login:
             self.err_time = self.err_time - 1
             tkinter.messagebox.showerror(title='教务管理系统',
                                          message='用户名或密码错误!\n您还能输入' + str(self.err_time) + '次')
+    def CheckAccount(self):
+        cur = self.conn.cursor()
+        sqlcmd = "select Account,Password,AccountLevel from LoginAccount where Account = '%s'" % self.account
+        if cur.execute(sqlcmd) == 0:
+            login_s = tkinter.messagebox.askokcancel(title='教务管理系统',
+                                                     message='您输入的用户名不存在，您需要要创建新用户吗')
+        else:
+            temp = cur.fetchone()
+            cur.close()
+            if temp[1] == self.password:
+                self.level = temp[2]
+                return True
+            else:
+                return False
+
+    def GetLoginAccount(self):
+        return [self.account, self.password, self.level]
 
     def login_res(self, _root):
         def login_run():
@@ -122,20 +139,6 @@ class Login:
         login_button2 = tkinter.Button(root_login, text='取消', width=7, command='quit')
         login_button2.place(x=205, y=230)
 
-    def CheckAccount(self):
-        cur = self.conn.cursor()
-        sqlcmd = "select Account,Password,AccountLevel from LoginAccount where Account = '%s'" % self.account
-        if cur.execute(sqlcmd) == 0:
-            login_s = tkinter.messagebox.askokcancel(title='教务管理系统',
-                                                     message='您输入的用户名不存在，您需要要创建新用户吗')
-        else:
-            temp = cur.fetchone()
-            cur.close()
-            if temp[1] == self.password:
-                self.level = temp[2]
-                return True
-            else:
-                return False
 
 
 if __name__ == '__main__':
