@@ -20,6 +20,7 @@ class Student:
         self.conn = conn
         self.account = account
         self.Password = passwd
+        self.width = 50
         self.Name = res[0]
         self.Gender = res[1]
         self.Birth = res[2]
@@ -386,6 +387,7 @@ class Student:
 if __name__ == '__main__':
     conn = pymysql.connect(user='root', passwd='root', db='student2022')
     # stu = Student(conn,'0000001','123456')
-    stu = Student(conn, '202001', '123456')
+    # stu = Student(conn, '202001', '444444')
+    stu = Student(conn, '20201103035', '123456')
     stu.MainFunc()
     conn.close()
