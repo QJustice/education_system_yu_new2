@@ -32,7 +32,7 @@ class Login:
         # 密码
         self.password = _password
         # 试错机会是否耗尽
-        if self.err_time <= 0:
+        if self.err_time <= 1:
             # 密码输入错误太多
             tkinter.messagebox.showerror(title='教务管理系统', message='警告！输入错误次数太多！系统自动退出')
             # 关闭登录界面
