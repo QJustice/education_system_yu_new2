@@ -43,7 +43,7 @@ class Student:
         buttonM.place(x=350, y=105)
         buttonL = tkinter.Button(self.stuGuiRoot, bg='blue', text='L', width=5, command=self.ChooseLessonInfo)
         buttonL.place(x=350, y=140)
-        buttonS = tkinter.Button(self.stuGuiRoot, bg='blue', text='S', width=5, command=self.OperatMessage)
+        buttonS = tkinter.Button(self.stuGuiRoot, bg='blue', text='S', width=5, command=self.stchoose)
         buttonS.place(x=350, y=175)
         buttonQ = tkinter.Button(self.stuGuiRoot, bg='blue', text='Q', width=5, command=self.Quit)
         buttonQ.place(x=350, y=210)
@@ -260,15 +260,17 @@ class Student:
         cur = self.conn.cursor()
         while True:
             print('Your Lessons :')
-            sqlcmd = "select * from stchoose where studentno = '%s' " % self.account
+            sqlcmd = "select  stchoose.lesNo as '课程编号', lesName as '课程名', date as '上课时间', classRoom as '教室' from " \
+                     "stchoose, lessoninfo where stchoose.lesNo = lessoninfo.lesNo AND stchoose.StudentNo = '%s' " % \
+                     self.account
             cur.execute(sqlcmd)
             # cone = cur.fetchone()
             # print(cone)
-            print('%10s|%20s|%25s|%15s|' % ('LesNo', 'lessonName', 'Time', 'ClassRoom'))
+            print('%10s|%20s|%25s|%15s|' % ('课程编号', '课程名', '上课时间', '教室'))
             while True:
                 res = cur.fetchone()
                 if not res: break
-                print('%10s|%20s|%25s|%15s' % (res[1], res[2], res[3], res[4]))
+                print('%12s|%22s|%28s|%17s' % (res[0], res[1], res[2], res[3]))
             print('-' * self.width)
             body1 = '[S]Search Score'
             body2 = '[Q]Quit'
@@ -387,7 +389,7 @@ class Student:
 if __name__ == '__main__':
     conn = pymysql.connect(user='root', passwd='root', db='student2022')
     # stu = Student(conn,'0000001','123456')
-    # stu = Student(conn, '202001', '444444')
-    stu = Student(conn, '20201103035', '123456')
+    stu = Student(conn, '202001', '444444')
+    # stu = Student(conn, '20201103035', '123456')
     stu.MainFunc()
     conn.close()
