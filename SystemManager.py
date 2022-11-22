@@ -32,7 +32,7 @@ class SystemManager:
             elif choice == 'G':
                 self.grade_view()
             elif choice == 'Q':
-                break;
+                break
             else:
                 info = 'Error Action!'
 
