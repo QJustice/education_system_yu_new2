@@ -16,6 +16,7 @@ condaba = ConnectDatabase.ConData(_host='127.0.0.1',
 conn = condaba.get_con_database()
 cur = conn.cursor()
 
+
 def student_score_view(_lenName):
     lesName = _lenName
     # 用于数据库查询的语句
@@ -37,6 +38,8 @@ def student_score_view(_lenName):
         pyplot.text(item[1] + item[0], int(item[3]), int(item[3]), ha='center', va='bottom', fontsize=10)
 
     pyplot.show()
+
+
 def score_view():
     sqlcmdAvg = "SELECT lessoninfo.lesName,AVG( score )" \
                 "FROM stchoose,lessoninfo " \
@@ -95,6 +98,8 @@ def score_view():
     pyplot.xticks([j for i in [r1, r2, r3] for j in i], [j for i in [r_tick, r_tick_max_min] for j in i])
 
     pyplot.show()
+
+
 def student_pass_rate(_lenName):
     lesName = _lenName
     sqlcmdallok = "SELECT studentinfo.StudentNo, studentinfo.`Name`,lessoninfo.lesName,score " \
@@ -124,6 +129,101 @@ def student_pass_rate(_lenName):
     pyplot.pie(data, labels=langs, autopct='%1.2f%%')
     pyplot.show()
 
+
+def less_view(_lessName):
+    sqlcmdAvg = "SELECT lessoninfo.lesName,AVG( score )" \
+                "FROM stchoose,lessoninfo " \
+                "WHERE lessoninfo.lesNo = stchoose.lesNo " \
+                "AND lessoninfo.lesName = '%s'" \
+                "GROUP BY	lessoninfo.lesNo" % _lessName
+    sqlcmdall = "SELECT studentinfo.StudentNo, studentinfo.`Name`,lessoninfo.lesName,score " \
+                "FROM stchoose, studentinfo, lessoninfo " \
+                "WHERE studentinfo.StudentNo = stchoose.StudentNo " \
+                "AND lessoninfo.lesName = '%s'" \
+                "AND stchoose.lesNo = lessoninfo.lesNo" % _lessName
+    cur.execute(sqlcmdall)
+    tempall = cur.fetchall()
+    cur.execute(sqlcmdAvg)
+    tempAvg = cur.fetchall()
+    print(tempAvg)
+    print(tempall)
+
+    def find_socre_max(data, lessName):
+        maxSocre = 0.0
+        for item in data:
+            if item[2] == lessName and item[3] > maxSocre:
+                maxSocre = item[3]
+        return maxSocre
+
+    def find_socre_min(data, lessName):
+        minSocre = 1000
+        for item in data:
+            if item[2] == lessName and item[3] < minSocre:
+                minSocre = item[3]
+        return minSocre
+
+    maxSocre = find_socre_max(tempall, _lessName)
+    minSocre = find_socre_min(tempall, _lessName)
+    pyplot.title('%s课程平均分' % _lessName)
+    pyplot.ylabel('分数')
+    pyplot.bar("平均分", tempAvg[0][1])
+    pyplot.bar("最高分", maxSocre)
+    pyplot.bar("最低分", minSocre)
+    pyplot.text("平均分", tempAvg[0][1], "%.2f" % tempAvg[0][1], ha='center', va='bottom', fontsize=10)
+    pyplot.text("最高分", maxSocre, maxSocre, ha='center', va='bottom', fontsize=10)
+    pyplot.text("最低分", minSocre, minSocre, ha='center', va='bottom', fontsize=10)
+
+    pyplot.show()
+"""
+_lessName = "Math"
+sqlcmdAvg = "SELECT lessoninfo.lesName,AVG( score )" \
+            "FROM stchoose,lessoninfo " \
+            "WHERE lessoninfo.lesNo = stchoose.lesNo " \
+            "AND lessoninfo.lesName = '%s'" \
+            "GROUP BY	lessoninfo.lesNo" % _lessName
+sqlcmdall = "SELECT studentinfo.StudentNo, studentinfo.`Name`,lessoninfo.lesName,score " \
+            "FROM stchoose, studentinfo, lessoninfo " \
+            "WHERE studentinfo.StudentNo = stchoose.StudentNo " \
+            "AND lessoninfo.lesName = '%s'" \
+            "AND stchoose.lesNo = lessoninfo.lesNo" % _lessName
+cur.execute(sqlcmdall)
+tempall = cur.fetchall()
+cur.execute(sqlcmdAvg)
+tempAvg = cur.fetchall()
+print(tempAvg)
+print(tempall)
+
+
+def find_socre_max(data, lessName):
+    maxSocre = 0.0
+    for item in data:
+        if item[2] == lessName and item[3] > maxSocre:
+            maxSocre = item[3]
+    return maxSocre
+
+
+def find_socre_min(data, lessName):
+    minSocre = 1000
+    for item in data:
+        if item[2] == lessName and item[3] < minSocre:
+            minSocre = item[3]
+    return minSocre
+
+
+maxSocre = find_socre_max(tempall, _lessName)
+minSocre = find_socre_min(tempall, _lessName)
+pyplot.title('课程平均分')
+pyplot.xlabel('课程名')
+pyplot.ylabel('分数')
+pyplot.bar("平均分", tempAvg[0][1])
+pyplot.bar("最高分", maxSocre)
+pyplot.bar("最低分", minSocre)
+pyplot.text("平均分", tempAvg[0][1], "%.2f" % tempAvg[0][1], ha='center', va='bottom', fontsize=10)
+pyplot.text("最高分", maxSocre, maxSocre, ha='center', va='bottom', fontsize=10)
+pyplot.text("最低分", minSocre, minSocre, ha='center', va='bottom', fontsize=10)
+
+pyplot.show()
+"""
 """
 lesName = "Math"
 sqlcmdallok = "SELECT studentinfo.StudentNo, studentinfo.`Name`,lessoninfo.lesName,score " \

@@ -1,7 +1,12 @@
 ﻿# -*- coding:utf-8 -*-
 ####教师帐号
 import os
+import tkinter
+from tkinter import INSERT
+from tkinter import Text
 import pymysql
+import score_view
+import tkinter.messagebox
 
 
 class Teacher:
@@ -25,24 +30,25 @@ class Teacher:
         self.PositionNo = temp[4]
         self.Salary = temp[5]
         self.Password = passwd
+        self.TeaGuiRoot = tkinter.Tk()
+        self.TeaGuiRoot.title("学生界面")
+        self.TeaGuiRoot.geometry("500x300+450+200")
 
     def MainFunc(self):
         ####主要执行函数
         info = ''
-        while True:
-            self.MainSurface(info)
-            choice = input('What to do?')
-            choice = choice.upper()
-            if choice == 'P':
-                info = self.OperatePersonalInfo()
-            elif choice == 'M':
-                info = self.OperateMessage()
-            elif choice == 'S':
-                info = self.ScoreMark()
-            elif choice == 'Q':
-                break
-            else:
-                info = 'Error Action'
+        self.MainSurface(info)
+        buttonP = tkinter.Button(self.TeaGuiRoot, text='P', width=5, bg='blue', command=self.OperatePersonalInfo)
+        buttonP.place(x=350, y=70)
+        buttonM = tkinter.Button(self.TeaGuiRoot, bg='blue', text='M', width=5, command=self.OperateMessage)
+        buttonM.place(x=350, y=105)
+        buttonL = tkinter.Button(self.TeaGuiRoot, bg='blue', text='G', width=5, command=self.score_data_view)
+        buttonL.place(x=350, y=140)
+        buttonS = tkinter.Button(self.TeaGuiRoot, bg='blue', text='S', width=5, command=self.ScoreMark)
+        buttonS.place(x=350, y=175)
+        buttonQ = tkinter.Button(self.TeaGuiRoot, bg='blue', text='Q', width=5, command=self.TeaGuiRoot.destroy)
+        buttonQ.place(x=350, y=210)
+        self.TeaGuiRoot.mainloop()
 
     def ScoreMark(self):
         ###打分
@@ -263,22 +269,132 @@ class Teacher:
         cur.close()
         return info
 
+    def score_data_view(self):
+        score_GUI_root = tkinter.Toplevel(self.TeaGuiRoot)
+        score_GUI_root.title("学生成绩可视化")
+        score_GUI_root.geometry('350x200+550+200')
+
+        def show_less(_data):
+            score_GUI_showLes = tkinter.Toplevel(self.TeaGuiRoot)
+            score_GUI_showLes.title("课程列表")
+            score_GUI_showLes.geometry('350x200+550+400')
+            text = Text(score_GUI_showLes, undo=True, autoseparators=False)
+            # 适用 pack(fill=X) 可以设置文本域的填充模式。比如 X表示沿水平方向填充，Y表示沿垂直方向填充，BOTH表示沿水平、垂直方向填充
+            text.pack()
+            i = 1
+            for item in _data:
+                # INSERT 光标处插入；END 末尾处插入
+                text.insert(INSERT, str(i) + '. ' + item[0] + '\n')
+                i = i + 1
+            buttonR = tkinter.Button(score_GUI_showLes,
+                                     text='重新输入',
+                                     width=7,
+                                     bg='blue',
+                                     command=self.score_data_view)
+            buttonR.place(x=70, y=150)
+            buttonQ = tkinter.Button(score_GUI_showLes,
+                                     bg='blue',
+                                     text='取消',
+                                     width=5,
+                                     command=score_GUI_showLes.destroy)
+            buttonQ.place(x=250, y=150)
+        def query_data(_lesname):
+            # 数据库游标
+            cur = self.conn.cursor()
+            # 用于数据库查询的语句
+            sqlcmd = "SELECT lesName, lesNo FROM lessoninfo GROUP BY lesName"
+            cur.execute(sqlcmd)
+            # 未查询到任何匹项
+            allLesName = cur.fetchall()
+            nocanfind = True
+            for item in allLesName:
+                if item[0] == _lesname:
+                    nocanfind = False
+                    score_tools = score_view.ScoreVis()
+                    score_GUI_view = tkinter.Toplevel(score_GUI_root)
+                    score_GUI_view.title("学生成绩可视化")
+                    score_GUI_view.geometry('350x350+550+200')
+                    buttonP = tkinter.Button(score_GUI_view,
+                                             text='P',
+                                             width=5,
+                                             bg='blue',
+                                             command=lambda: score_tools.student_score_view(_lesname))
+                    buttonP.place(x=250, y=70)
+
+                    buttonM = tkinter.Button(score_GUI_view,
+                                             bg='blue',
+                                             text='M',
+                                             width=5,
+                                             command=lambda: score_tools.less_view(_lesname))
+                    buttonM.place(x=250, y=105)
+                    buttonL = tkinter.Button(score_GUI_view,
+                                             bg='blue',
+                                             text='G',
+                                             width=5,
+                                             command=lambda: score_tools.student_pass_rate(_lesname))
+                    buttonL.place(x=250, y=140)
+                    buttonV = tkinter.Button(score_GUI_view,
+                                             bg='blue',
+                                             text='V',
+                                             width=5,
+                                             command=score_tools.score_view)
+                    buttonV.place(x=250, y=175)
+                    buttonQ = tkinter.Button(score_GUI_view,
+                                             bg='blue',
+                                             text='Q',
+                                             width=5,
+                                             command=score_GUI_view.destroy)
+                    buttonQ.place(x=250, y=210)
+                    ####主界面
+                    title = "Welcome, %s" % _lesname
+                    body1 = '[P]%s课程成绩分布\n\n' % _lesname
+                    body2 = '[M]%s课程平均分\n\n' % _lesname
+                    body3 = '[G]%s课程及格率\n\n' % _lesname
+                    body4 = '[V]课程横向对比\n\n'
+                    body5 = '[Q]Quit\n\n'
+                    msfToplab = tkinter.Label(score_GUI_view, anchor='w', justify='left', bg='yellow',
+                                              text=title, font=("", 16))
+                    msfToplab.place(x=140, y=10)
+                    msflab = tkinter.Label(score_GUI_view, anchor='w', justify='left', bg='yellow',
+                                           text=(body1 + body2 + body3 + body4 + body5))
+                    msflab.place(x=70, y=70)
+            if nocanfind:
+                login_s = tkinter.messagebox.askokcancel(title='教务管理系统',
+                                                         message='您输入的课程不存在，请确认课程名，是否需要查看课程列表')
+                if login_s:
+                    show_less(allLesName)
+                else:
+                    self.score_data_view()
+
+        wel = tkinter.Label(score_GUI_root, text='欢迎进入学生成绩可视化查看界面', font=('Arial', 10))
+        wel.pack()
+        # 将输入框里面的东西拿出来，用于接收用户输入的课程名
+        les_name = tkinter.StringVar()
+        # 设置提升字样
+        show_new_name = tkinter.Label(score_GUI_root, text='请输入课程名', font=('Arial', 9))
+        show_new_name.place(x=70, y=50)
+        input_new_name = tkinter.Entry(score_GUI_root, textvariable=les_name)
+        input_new_name.place(x=155, y=50)
+        login_button2 = tkinter.Button(score_GUI_root, text='查询', width=7, command=lambda: query_data(les_name.get()))
+        login_button2.place(x=75, y=130)
+        login_button3 = tkinter.Button(score_GUI_root, text='取消', width=7, command=score_GUI_root.destroy)
+        login_button3.place(x=225, y=130)
+
     def MainSurface(self, info):
         os.system('cls')
         ####主界面
         title = "Welcome, %s" % self.Name
-        body1 = '[P]Personal Information'
-        body2 = '[M]Message Management'
-        body4 = '[S]Score Mark'
-        body3 = '[Q]Quit'
-        print('=' * self.width)
-        print(title)
-        print(body1)
-        print(body2)
-        print(body4)
-        print(body3)
-        print(info)
-        print('=' * self.width)
+        body1 = '[P]Personal Information\n\n'
+        body2 = '[M]Message Management\n\n'
+        body3 = '[G]Grop Score\n\n'
+        body4 = '[S]Score Mark\n\n'
+        body5 = '[Q]Quit\n\n'
+        msfToplab = tkinter.Label(self.TeaGuiRoot, anchor='w', justify='left', bg='yellow',
+                                  text=title, font=("", 16))
+        msfToplab.place(x=140, y=10)
+        msflab = tkinter.Label(self.TeaGuiRoot, anchor='w', justify='left', bg='yellow',
+                               text=(body1 + body2 + body3 + body4 + body5))
+        msflab.place(x=70, y=70)
 
     def PersonalInfoSurface(self, info):
         ####个人信息界面
@@ -338,7 +454,7 @@ class Teacher:
 
 
 if __name__ == '__main__':
-    conn = pymysql.connect(user='root', passwd='123456', db='student2022')
-    t = Teacher(conn, '00001', '123456')
+    conn = pymysql.connect(user='root', passwd='root', db='student2022')
+    t = Teacher(conn, '20022', '123456')
     t.MainFunc()
     conn.close()
